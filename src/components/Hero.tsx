@@ -1,12 +1,23 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
+const slides = ['/images/bg1.jpg', '/images/bg2.jpg', '/images/bg3.jpg'];
+const SLIDE_MS = 5500;
+
 export default function Hero() {
   const { t, lang } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % slides.length);
+    }, SLIDE_MS);
+    return () => clearInterval(id);
+  }, [index]);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -30,22 +41,31 @@ export default function Hero() {
       className="relative h-[90vh] lg:h-screen min-h-[600px] overflow-hidden"
       style={{ willChange: 'opacity' } as React.CSSProperties}
     >
-      {/* Background Image with gradient overlay */}
+      {/* Background slideshow with gradient overlay */}
       <div className="absolute inset-0 bg-deep-forest">
+        {slides.map((src, i) => (
+          <motion.div
+            key={src}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url('${src}')`,
+              transform: 'translateY(var(--scroll, 0)) scale(1.03)',
+            }}
+            initial={false}
+            animate={{ opacity: i === index ? 1 : 0 }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+          />
+        ))}
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0"
           style={{
-            backgroundImage: `url('/images/hero-bg.jpg'), linear-gradient(
+            background: `linear-gradient(
               160deg,
               rgba(13, 43, 34, 0.55) 0%,
               rgba(22, 58, 45, 0.4) 30%,
               rgba(13, 43, 34, 0.55) 60%,
               rgba(23, 26, 24, 0.7) 100%
             )`,
-            backgroundBlendMode: 'overlay',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: 'translateY(var(--scroll, 0)) scale(1.03)',
           }}
         />
         {/* Subtle pattern overlay */}
@@ -100,6 +120,36 @@ export default function Hero() {
             </Link>
           </div>
         </motion.div>
+
+        {/* Slide dots */}
+        <div className="absolute bottom-20 lg:bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+          {slides.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              aria-label={`Slide ${i + 1}`}
+              onClick={() => setIndex(i)}
+              className={`h-[5px] rounded-full transition-all duration-500 ${
+                i === index ? 'w-8 bg-muted-gold' : 'w-[5px] bg-ivory/35 hover:bg-ivory/60'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Slide dots */}
+        <div className="absolute bottom-20 lg:bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+          {slides.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              aria-label={`Slide ${i + 1}`}
+              onClick={() => setIndex(i)}
+              className={`h-[5px] rounded-full transition-all duration-500 ${
+                i === index ? 'w-8 bg-muted-gold' : 'w-[5px] bg-ivory/35 hover:bg-ivory/60'
+              }`}
+            />
+          ))}
+        </div>
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 lg:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ivory/40">
