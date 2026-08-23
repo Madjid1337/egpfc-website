@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
-const slides = ['/images/bg1.jpg', '/images/bg2.jpg', '/images/bg3.jpg'];
+const slides = ['/images/hero-bg.jpg', '/images/bg1.jpg', '/images/bg2.jpg', '/images/bg3.jpg'];
 const SLIDE_MS = 5500;
 
 export default function Hero() {
