@@ -69,6 +69,25 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.12) !important;
 }
 
+.leaflet-control-layers {
+  border: none !important;
+  border-radius: 2px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18) !important;
+  font-size: 12px !important;
+}
+
+.leaflet-control-layers-toggle {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.leaflet-control-zoom a {
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  color: #0D2B22 !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

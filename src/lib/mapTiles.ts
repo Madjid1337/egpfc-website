@@ -1,7 +1,17 @@
-/** Shared basemap config — OpenStreetMap (no API key, stable long-term). */
-export const MAP_TILE = {
-  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+export const MAP_MAX_ZOOM = 22;
+
+export const SATELLITE_TILE = {
+  url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom: 19,
+    'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+  maxNativeZoom: 19,
+  maxZoom: MAP_MAX_ZOOM,
+} as const;
+
+export const STREET_TILE = {
+  url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+  attribution:
+    'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, TomTom',
+  maxNativeZoom: 19,
+  maxZoom: MAP_MAX_ZOOM,
 } as const;

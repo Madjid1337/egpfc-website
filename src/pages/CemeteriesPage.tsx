@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Search, ChevronRight, MapPinHouse, Clock } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useCemeteries } from '@/hooks/useCemeteries';
 import type { Cemetery } from '@/data/cemeteries';
-import { MAP_TILE } from '@/lib/mapTiles';
+import { MAP_MAX_ZOOM } from '@/lib/mapTiles';
+import MapBaseLayers from '@/components/MapBaseLayers';
 
 const markerIcon = new L.DivIcon({
   className: 'custom-marker',
@@ -60,15 +61,13 @@ export default function CemeteriesPage() {
         <MapContainer
           center={[36.75, 3.05]}
           zoom={11}
-          scrollWheelZoom={false}
+          minZoom={8}
+          maxZoom={MAP_MAX_ZOOM}
+          scrollWheelZoom={true}
           className="h-full w-full"
-          zoomControl={false}
+          zoomControl={true}
         >
-          <TileLayer
-            attribution={MAP_TILE.attribution}
-            url={MAP_TILE.url}
-            maxZoom={MAP_TILE.maxZoom}
-          />
+          <MapBaseLayers defaultMode="satellite" />
           {cemeteries.map((cemetery) => (
             <Marker
               key={cemetery.id}

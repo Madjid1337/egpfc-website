@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import Contact from '@/components/Contact';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { MAP_TILE } from '@/lib/mapTiles';
+import { MAP_MAX_ZOOM } from '@/lib/mapTiles';
+import MapBaseLayers from '@/components/MapBaseLayers';
 
 const markerIcon = new L.DivIcon({
   className: 'custom-marker',
@@ -44,16 +45,14 @@ export default function ContactPage() {
       <section className="h-[400px] lg:h-[500px] bg-light-gray">
         <MapContainer
           center={[36.75, 3.05]}
-          zoom={12}
-          scrollWheelZoom={false}
+          zoom={14}
+          minZoom={8}
+          maxZoom={MAP_MAX_ZOOM}
+          scrollWheelZoom={true}
           className="h-full w-full"
-          zoomControl={false}
+          zoomControl={true}
         >
-          <TileLayer
-            attribution={MAP_TILE.attribution}
-            url={MAP_TILE.url}
-            maxZoom={MAP_TILE.maxZoom}
-          />
+          <MapBaseLayers defaultMode="satellite" />
           <Marker position={[36.7528, 3.0421]} icon={markerIcon} />
         </MapContainer>
       </section>
