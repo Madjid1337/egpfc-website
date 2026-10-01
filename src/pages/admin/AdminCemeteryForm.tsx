@@ -12,6 +12,7 @@ import {
   typeArFromType,
   upsertCemetery,
   uploadSiteImage,
+  deleteCemetery,
   type CemeteryFormValues,
 } from '@/lib/adminApi';
 import { MAP_MAX_ZOOM } from '@/lib/mapTiles';
@@ -31,19 +32,22 @@ export default function AdminCemeteryForm() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [idLocked, setIdLocked] = useState(false);
+  /** When true, typing the French name no longer overwrites the slug */
+  const [slugManual, setSlugManual] = useState(false);
+  const [originalId, setOriginalId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isNew && cemetery) {
       setForm(cemeteryToForm(cemetery));
-      setIdLocked(true);
+      setOriginalId(cemetery.id);
+      setSlugManual(true);
     }
   }, [isNew, cemetery]);
 
   function setField<K extends keyof CemeteryFormValues>(key: K, value: CemeteryFormValues[K]) {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
-      if (key === 'name' && isNew && !idLocked) {
+      if (key === 'name' && isNew && !slugManual) {
         next.id = slugifyId(String(value));
       }
       if (key === 'type') {
@@ -75,8 +79,21 @@ export default function AdminCemeteryForm() {
       return;
     }
 
+    const normalizedId = slugifyId(form.id) || form.id.trim().toLowerCase();
+    if (!normalizedId) {
+      setError('Identifiant invalide. Utilisez des lettres, chiffres et tirets.');
+      return;
+    }
+
     setSaving(true);
-    const result = await upsertCemetery(form);
+    const payload = { ...form, id: normalizedId };
+    const result = await upsertCemetery(payload);
+
+    // If the slug changed on edit, remove the old row (primary key can't be updated in place)
+    if (!result.error && originalId && originalId !== normalizedId) {
+      await deleteCemetery(originalId);
+    }
+
     setSaving(false);
 
     if (result.error) {
@@ -124,13 +141,17 @@ export default function AdminCemeteryForm() {
               <input
                 className={inputClass}
                 value={form.id}
-                disabled={idLocked}
                 onChange={(e) => {
-                  setIdLocked(true);
-                  setField('id', e.target.value);
+                  setSlugManual(true);
+                  setField('id', e.target.value.toLowerCase().replace(/\s+/g, '-'));
                 }}
+                onBlur={() => setField('id', slugifyId(form.id) || form.id)}
+                placeholder="ex: el-alia"
                 required
               />
+              <p className="mt-1.5 text-[11px] text-olive/45">
+                Utilisé dans l’URL : /cimetieres/{form.id || '…'} — lettres, chiffres et tirets.
+              </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
