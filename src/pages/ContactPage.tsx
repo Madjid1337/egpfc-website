@@ -3,6 +3,7 @@ import Contact from '@/components/Contact';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { MAP_TILE } from '@/lib/mapTiles';
 
 const markerIcon = new L.DivIcon({
   className: 'custom-marker',
@@ -49,7 +50,9 @@ export default function ContactPage() {
           zoomControl={false}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution={MAP_TILE.attribution}
+            url={MAP_TILE.url}
+            maxZoom={MAP_TILE.maxZoom}
           />
           <Marker position={[36.7528, 3.0421]} icon={markerIcon} />
         </MapContainer>

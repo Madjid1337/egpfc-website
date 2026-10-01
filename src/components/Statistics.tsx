@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useCountUp } from '@/hooks/useCountUp';
-import { stats } from '@/data/cemeteries';
+import { useCemeteries } from '@/hooks/useCemeteries';
 
 function StatItem({ value, label, revealed, delay }: { value: number; label: string; revealed: boolean; delay: number }) {
   const count = useCountUp(value, 2200, revealed);
@@ -26,6 +26,7 @@ function StatItem({ value, label, revealed, delay }: { value: number; label: str
 export default function Statistics() {
   const { t } = useLanguage();
   const { ref, revealed } = useScrollReveal(0.3);
+  const { stats } = useCemeteries();
 
   return (
     <section className="relative py-24 lg:py-32 overflow-hidden bg-deep-forest">

@@ -7,8 +7,9 @@ import L from 'leaflet';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useCountUp } from '@/hooks/useCountUp';
-import { cemeteries, stats } from '@/data/cemeteries';
+import { useCemeteries } from '@/hooks/useCemeteries';
 import type { Cemetery } from '@/data/cemeteries';
+import { MAP_TILE } from '@/lib/mapTiles';
 
 // Custom marker icon
 const markerIcon = new L.DivIcon({
@@ -52,6 +53,7 @@ function StatItem({ value, label, revealed, delay }: { value: number; label: str
 export default function CemeteryMap() {
   const { t, lang } = useLanguage();
   const { ref, revealed } = useScrollReveal();
+  const { cemeteries, stats } = useCemeteries();
   const [selectedCemetery, setSelectedCemetery] = useState<Cemetery | null>(null);
 
   return (
@@ -94,8 +96,9 @@ export default function CemeteryMap() {
             zoomControl={false}
           >
             <TileLayer
-              attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              attribution={MAP_TILE.attribution}
+              url={MAP_TILE.url}
+              maxZoom={MAP_TILE.maxZoom}
             />
             <MapController />
             {cemeteries.map((cemetery) => (

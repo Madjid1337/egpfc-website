@@ -5,8 +5,9 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Search, ChevronRight, MapPinHouse, Clock } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { cemeteries, communes } from '@/data/cemeteries';
+import { useCemeteries } from '@/hooks/useCemeteries';
 import type { Cemetery } from '@/data/cemeteries';
+import { MAP_TILE } from '@/lib/mapTiles';
 
 const markerIcon = new L.DivIcon({
   className: 'custom-marker',
@@ -17,6 +18,7 @@ const markerIcon = new L.DivIcon({
 
 export default function CemeteriesPage() {
   const { t, lang } = useLanguage();
+  const { cemeteries, communes } = useCemeteries();
   const [search, setSearch] = useState('');
   const [communeFilter, setCommuneFilter] = useState('');
 
@@ -63,8 +65,9 @@ export default function CemeteriesPage() {
           zoomControl={false}
         >
           <TileLayer
-            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution={MAP_TILE.attribution}
+            url={MAP_TILE.url}
+            maxZoom={MAP_TILE.maxZoom}
           />
           {cemeteries.map((cemetery) => (
             <Marker

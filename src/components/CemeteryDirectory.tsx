@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { cemeteries, communes } from '@/data/cemeteries';
+import { useCemeteries } from '@/hooks/useCemeteries';
 import type { Cemetery } from '@/data/cemeteries';
 
 export default function CemeteryDirectory() {
   const { t, lang } = useLanguage();
   const { ref, revealed } = useScrollReveal();
+  const { cemeteries, communes } = useCemeteries();
   const [search, setSearch] = useState('');
   const [communeFilter, setCommuneFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');

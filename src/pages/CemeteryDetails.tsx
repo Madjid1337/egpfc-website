@@ -4,7 +4,8 @@ import { ArrowLeft, MapPinHouse, Clock, Building2, ExternalLink } from 'lucide-r
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { cemeteries } from '@/data/cemeteries';
+import { useCemetery } from '@/hooks/useCemeteries';
+import { MAP_TILE } from '@/lib/mapTiles';
 
 const markerIcon = new L.DivIcon({
   className: 'custom-marker',
@@ -16,7 +17,15 @@ const markerIcon = new L.DivIcon({
 export default function CemeteryDetails() {
   const { id } = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
-  const cemetery = cemeteries.find((c) => c.id === id);
+  const { cemetery, loading } = useCemetery(id);
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-20 text-center">
+        <p className="text-olive/50">…</p>
+      </div>
+    );
+  }
 
   if (!cemetery) {
     return (
@@ -119,7 +128,9 @@ export default function CemeteryDetails() {
                   zoomControl={false}
                 >
                   <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                    attribution={MAP_TILE.attribution}
+                    url={MAP_TILE.url}
+                    maxZoom={MAP_TILE.maxZoom}
                   />
                   <Marker position={cemetery.coordinates} icon={markerIcon} />
                 </MapContainer>
