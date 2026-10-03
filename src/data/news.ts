@@ -10,6 +10,7 @@ export interface NewsItem {
   descriptionAr: string;
   imageUrl: string;
   slug: string;
+  published?: boolean;
 }
 
 export const newsItems: NewsItem[] = [

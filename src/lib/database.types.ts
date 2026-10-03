@@ -30,6 +30,8 @@ export type Database = {
           description_ar: string;
           image_url: string;
           available: boolean;
+          unite_id: string | null;
+          qr_code_url: string;
           created_at: string;
           updated_at: string;
         };
@@ -53,6 +55,8 @@ export type Database = {
           description_ar?: string;
           image_url?: string;
           available?: boolean;
+          unite_id?: string | null;
+          qr_code_url?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -76,6 +80,8 @@ export type Database = {
           description_ar?: string;
           image_url?: string;
           available?: boolean;
+          unite_id?: string | null;
+          qr_code_url?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -167,9 +173,187 @@ export type Database = {
         };
         Relationships: [];
       };
+      services: {
+        Row: {
+          id: string;
+          number: string;
+          title: string;
+          title_ar: string;
+          description: string;
+          description_ar: string;
+          icon: string;
+          features: string[];
+          features_ar: string[];
+          sort_order: number;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          number?: string;
+          title: string;
+          title_ar: string;
+          description?: string;
+          description_ar?: string;
+          icon?: string;
+          features?: string[];
+          features_ar?: string[];
+          sort_order?: number;
+          published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          number?: string;
+          title?: string;
+          title_ar?: string;
+          description?: string;
+          description_ar?: string;
+          icon?: string;
+          features?: string[];
+          features_ar?: string[];
+          sort_order?: number;
+          published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      profiles: {
+        Row: {
+          id: string;
+          email: string | null;
+          full_name: string;
+          role: 'dev' | 'directeur' | 'chef_unite';
+          unite_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          full_name?: string;
+          role?: 'dev' | 'directeur' | 'chef_unite';
+          unite_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          full_name?: string;
+          role?: 'dev' | 'directeur' | 'chef_unite';
+          unite_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      unites: {
+        Row: {
+          id: string;
+          name: string;
+          name_ar: string;
+          chef_user_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          name_ar?: string;
+          chef_user_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          name_ar?: string;
+          chef_user_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          id: string;
+          cemetery_id: string;
+          issue_type: string;
+          description: string;
+          image_url: string;
+          status: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
+          resolution_note: string;
+          reporter_ip: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          cemetery_id: string;
+          issue_type: string;
+          description: string;
+          image_url?: string;
+          status?: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
+          resolution_note?: string;
+          reporter_ip?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          cemetery_id?: string;
+          issue_type?: string;
+          description?: string;
+          image_url?: string;
+          status?: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
+          resolution_note?: string;
+          reporter_ip?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      alerts: {
+        Row: {
+          id: string;
+          report_id: string;
+          from_user_id: string | null;
+          to_user_id: string;
+          message: string;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          report_id: string;
+          from_user_id?: string | null;
+          to_user_id: string;
+          message?: string;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          report_id?: string;
+          from_user_id?: string | null;
+          to_user_id?: string;
+          message?: string;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      ensure_my_profile: {
+        Args: Record<string, never>;
+        Returns: Database['public']['Tables']['profiles']['Row'];
+      };
+      current_role: { Args: Record<string, never>; Returns: string };
+      current_unite_id: { Args: Record<string, never>; Returns: string };
+      is_directeur: { Args: Record<string, never>; Returns: boolean };
+      is_staff_full: { Args: Record<string, never>; Returns: boolean };
+      is_chef: { Args: Record<string, never>; Returns: boolean };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

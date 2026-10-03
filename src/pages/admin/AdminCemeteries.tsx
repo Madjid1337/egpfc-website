@@ -1,15 +1,28 @@
 import { Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useCemeteries } from '@/hooks/useCemeteries';
 import { deleteCemetery } from '@/lib/adminApi';
 
 export default function AdminCemeteries() {
-  const { cemeteries, loading, source } = useCemeteries();
+  const { isFullAccess, isChef, uniteId } = useAuth();
+  const { cemeteries: all, loading, source } = useCemeteries();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const cemeteries = useMemo(() => {
+    if (isChef && uniteId) {
+      return all.filter((c) => c.uniteId === uniteId);
+    }
+    return all;
+  }, [all, isChef, uniteId]);
+
   async function onDelete(id: string, name: string) {
+    if (!isFullAccess) {
+      setError('Seul le Directeur / Développeur peut supprimer un cimetière.');
+      return;
+    }
     if (!confirm(`Supprimer « ${name} » ?`)) return;
     setBusyId(id);
     setError(null);
@@ -29,15 +42,18 @@ export default function AdminCemeteries() {
           <h1 className="font-display text-3xl font-light text-deep-forest mb-2">Cimetières</h1>
           <p className="text-sm text-olive/60">
             {loading ? 'Chargement…' : `${cemeteries.length} entrées`} · source {source}
+            {isChef && uniteId ? ' · votre unité' : ''}
           </p>
         </div>
-        <Link
-          to="/admin/cimetieres/nouveau"
-          className="inline-flex items-center gap-2 bg-deep-forest text-ivory px-5 py-2.5 text-sm font-semibold tracking-[0.06em] hover:bg-deep-forest/90"
-        >
-          <Plus className="w-4 h-4" />
-          Nouveau
-        </Link>
+        {(isFullAccess || isChef) && (
+          <Link
+            to="/admin/cimetieres/nouveau"
+            className="inline-flex items-center gap-2 bg-deep-forest text-ivory px-5 py-2.5 text-sm font-semibold tracking-[0.06em] hover:bg-deep-forest/90"
+          >
+            <Plus className="w-4 h-4" />
+            Nouveau
+          </Link>
+        )}
       </div>
 
       {error && <p className="mb-4 text-sm text-red-700 bg-red-50 p-3">{error}</p>}
@@ -71,15 +87,17 @@ export default function AdminCemeteries() {
                     >
                       <Pencil className="w-4 h-4" />
                     </Link>
-                    <button
-                      type="button"
-                      disabled={busyId === c.id}
-                      onClick={() => onDelete(c.id, c.name)}
-                      className="p-2 text-olive/50 hover:text-red-700 disabled:opacity-40"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {isFullAccess && (
+                      <button
+                        type="button"
+                        disabled={busyId === c.id}
+                        onClick={() => onDelete(c.id, c.name)}
+                        className="p-2 text-olive/50 hover:text-red-700 disabled:opacity-40"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -87,7 +105,9 @@ export default function AdminCemeteries() {
             {!loading && cemeteries.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-10 text-center text-olive/50">
-                  Aucun cimetière.
+                  {isChef
+                    ? 'Aucun cimetière assigné à votre unité.'
+                    : 'Aucun cimetière.'}
                 </td>
               </tr>
             )}

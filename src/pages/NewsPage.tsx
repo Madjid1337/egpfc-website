@@ -2,10 +2,11 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { newsItems } from '@/data/news';
+import { useNews } from '@/hooks/useNews';
 
 export default function NewsPage() {
   const { t, lang } = useLanguage();
+  const { items } = useNews();
 
   return (
     <div className="pt-16 lg:pt-20">
@@ -33,7 +34,7 @@ export default function NewsPage() {
       <section className="py-20 lg:py-28 bg-off-white">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-12 xl:px-20">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-            {newsItems.map((item, i) => (
+            {items.map((item, i) => (
               <motion.article
                 key={item.id}
                 initial={{ opacity: 0, y: 40 }}
@@ -44,9 +45,13 @@ export default function NewsPage() {
               >
                 <Link to={`/actualites/${item.slug}`} className="block">
                   <div className="aspect-[16/10] bg-light-gray mb-5 overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-olive/15 to-deep-forest/10 flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-700 ease-out">
-                      <div className="text-olive/20 text-5xl font-thin font-display">{item.id}</div>
-                    </div>
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-olive/15 to-deep-forest/10 flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-700 ease-out">
+                        <div className="text-olive/20 text-5xl font-thin font-display">{i + 1}</div>
+                      </div>
+                    )}
                   </div>
                   <div className={`flex items-center gap-3 text-[10px] lg:text-[11px] tracking-[0.1em] uppercase mb-3 ${lang === 'ar' ? 'flex-row-reverse' : ''}`}>
                     <span className="text-muted-gold font-medium">{lang === 'ar' ? item.categoryAr : item.category}</span>

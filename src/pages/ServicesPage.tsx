@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion';
-import { Building2, Sparkles, Trees, Heart, Shield } from 'lucide-react';
+import { Building2, Sparkles, Trees, Heart, Shield, Leaf, Users, MapPin } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { services } from '@/data/services';
+import { useServices } from '@/hooks/useServices';
 
 const iconMap: Record<string, React.FC<{ className?: string }>> = {
-  Building2, Sparkles, Trees, Heart, Shield,
+  Building2, Sparkles, Trees, Heart, Shield, Leaf, Users, MapPin,
 };
 
 export default function ServicesPage() {
   const { t, lang } = useLanguage();
+  const { items: services } = useServices();
 
   return (
     <div className="pt-16 lg:pt-20">
@@ -37,7 +38,7 @@ export default function ServicesPage() {
         <div className="mx-auto max-w-[1440px] px-6 lg:px-12 xl:px-20">
           <div className="divide-y divide-light-gray">
             {services.map((service, i) => {
-              const Icon = iconMap[service.icon];
+              const Icon = iconMap[service.icon] ?? Building2;
               return (
                 <motion.div
                   key={service.id}
@@ -53,7 +54,7 @@ export default function ServicesPage() {
                       <span className={`text-4xl font-thin text-light-gray shrink-0 ${lang === 'ar' ? 'font-arabic' : 'font-display'}`}>
                         {service.number}
                       </span>
-                      {Icon && <Icon className="w-6 h-6 text-muted-gold mt-1 shrink-0" />}
+                      <Icon className="w-6 h-6 text-muted-gold mt-1 shrink-0" />
                     </div>
                     <div className="lg:col-span-2">
                       <h2 className={`text-xl lg:text-2xl font-semibold text-deep-forest mb-4 ${lang === 'ar' ? 'font-arabic' : ''}`}>

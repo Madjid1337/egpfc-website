@@ -17,6 +17,8 @@ export interface Cemetery {
   descriptionAr: string;
   imageUrl: string;
   available: boolean;
+  uniteId?: string | null;
+  qrCodeUrl?: string;
 }
 
 export const cemeteries: Cemetery[] = [

@@ -1,5 +1,6 @@
 import type { Cemetery } from '@/data/cemeteries';
 import type { Database } from '@/lib/database.types';
+import { generateAndUploadQr } from '@/lib/operationsApi';
 import { supabase } from '@/lib/supabase';
 
 type CemeteryInsert = Database['public']['Tables']['cemeteries']['Insert'];
@@ -25,6 +26,8 @@ export type CemeteryFormValues = {
   descriptionAr: string;
   imageUrl: string;
   available: boolean;
+  uniteId: string | null;
+  qrCodeUrl: string;
 };
 
 export function cemeteryToForm(c: Cemetery): CemeteryFormValues {
@@ -48,6 +51,8 @@ export function cemeteryToForm(c: Cemetery): CemeteryFormValues {
     descriptionAr: c.descriptionAr,
     imageUrl: c.imageUrl,
     available: c.available,
+    uniteId: c.uniteId ?? null,
+    qrCodeUrl: c.qrCodeUrl ?? '',
   };
 }
 
@@ -72,6 +77,8 @@ export function emptyCemeteryForm(): CemeteryFormValues {
     descriptionAr: '',
     imageUrl: '',
     available: true,
+    uniteId: null,
+    qrCodeUrl: '',
   };
 }
 
@@ -112,6 +119,8 @@ function toInsert(values: CemeteryFormValues): CemeteryInsert {
     description_ar: values.descriptionAr,
     image_url: values.imageUrl,
     available: values.available,
+    unite_id: values.uniteId,
+    qr_code_url: values.qrCodeUrl || '',
     updated_at: new Date().toISOString(),
   };
 }
@@ -119,7 +128,30 @@ function toInsert(values: CemeteryFormValues): CemeteryInsert {
 export async function upsertCemetery(values: CemeteryFormValues) {
   const payload = toInsert(values);
   const { error } = await supabase.from('cemeteries').upsert(payload);
-  return { error: error?.message };
+  if (error) return { error: error.message, qrCodeUrl: values.qrCodeUrl };
+
+  const qr = await generateAndUploadQr(values.id);
+  if (qr.url) {
+    const { error: qrUpdateError } = await supabase
+      .from('cemeteries')
+      .update({ qr_code_url: qr.url, updated_at: new Date().toISOString() })
+      .eq('id', values.id);
+    if (qrUpdateError) {
+      return {
+        error: undefined as string | undefined,
+        qrCodeUrl: qr.url,
+        warning: `Enregistré, mais QR non lié en base: ${qrUpdateError.message}`,
+      };
+    }
+    return { error: undefined as string | undefined, qrCodeUrl: qr.url };
+  }
+
+  // Cemetery saved — QR is optional; don't block the save
+  return {
+    error: undefined as string | undefined,
+    qrCodeUrl: values.qrCodeUrl,
+    warning: qr.error ? `Enregistré, mais QR non généré: ${qr.error}` : undefined,
+  };
 }
 
 export async function deleteCemetery(id: string) {

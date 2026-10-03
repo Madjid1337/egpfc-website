@@ -7,6 +7,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useCemetery } from '@/hooks/useCemeteries';
 import { MAP_MAX_ZOOM } from '@/lib/mapTiles';
 import MapBaseLayers from '@/components/MapBaseLayers';
+import ReportIssueForm from '@/components/ReportIssueForm';
 
 const markerIcon = new L.DivIcon({
   className: 'custom-marker',
@@ -41,12 +42,25 @@ export default function CemeteryDetails() {
 
   return (
     <div className="pt-16 lg:pt-20">
-      {/* Header */}
-      <section className="bg-deep-forest py-20 lg:py-28">
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-12 xl:px-20">
+      {/* Cover hero */}
+      <section className="relative min-h-[42vh] lg:min-h-[52vh] overflow-hidden bg-deep-forest">
+        {cemetery.imageUrl ? (
+          <>
+            <img
+              src={cemetery.imageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-deep-forest via-deep-forest/55 to-deep-forest/25" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-deep-forest" />
+        )}
+
+        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-12 xl:px-20 py-20 lg:py-28 flex flex-col justify-end min-h-[42vh] lg:min-h-[52vh]">
           <Link
             to="/cimetieres"
-            className={`inline-flex items-center gap-2 text-ivory/50 hover:text-ivory text-sm mb-8 transition-colors ${lang === 'ar' ? 'flex-row-reverse' : ''}`}
+            className={`inline-flex items-center gap-2 text-ivory/60 hover:text-ivory text-sm mb-8 transition-colors w-fit ${lang === 'ar' ? 'flex-row-reverse' : ''}`}
           >
             <ArrowLeft className="w-4 h-4" />
             {t.cemeteries.heading}
@@ -55,7 +69,7 @@ export default function CemeteryDetails() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className={`text-3xl lg:text-5xl xl:text-6xl font-light text-ivory leading-[1.15] mb-4 ${lang === 'ar' ? 'font-arabic' : 'font-display'}`}
+            className={`text-3xl lg:text-5xl xl:text-6xl font-light text-ivory leading-[1.15] mb-4 max-w-4xl ${lang === 'ar' ? 'font-arabic' : 'font-display'}`}
           >
             {lang === 'ar' ? cemetery.nameAr : cemetery.name}
           </motion.h1>
@@ -63,7 +77,7 @@ export default function CemeteryDetails() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-lg text-ivory/50"
+            className="text-lg text-ivory/60"
           >
             {lang === 'ar' ? cemetery.communeAr : cemetery.commune}, {cemetery.wilaya}
           </motion.p>
@@ -159,6 +173,10 @@ export default function CemeteryDetails() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="mt-16 lg:mt-20 max-w-2xl">
+            <ReportIssueForm cemeteryId={cemetery.id} cemeteryName={lang === 'ar' ? cemetery.nameAr : cemetery.name} />
           </div>
         </div>
       </section>

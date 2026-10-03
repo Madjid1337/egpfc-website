@@ -17,6 +17,14 @@ import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminCemeteries from '@/pages/admin/AdminCemeteries';
 import AdminCemeteryForm from '@/pages/admin/AdminCemeteryForm';
 import AdminMedia from '@/pages/admin/AdminMedia';
+import AdminNews from '@/pages/admin/AdminNews';
+import AdminNewsForm from '@/pages/admin/AdminNewsForm';
+import AdminServices from '@/pages/admin/AdminServices';
+import AdminServiceForm from '@/pages/admin/AdminServiceForm';
+import AdminReports from '@/pages/admin/AdminReports';
+import AdminUnites from '@/pages/admin/AdminUnites';
+import AdminAlerts from '@/pages/admin/AdminAlerts';
+import AdminUsers from '@/pages/admin/AdminUsers';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -41,7 +49,17 @@ function AppRoutes() {
             <Route path="cimetieres" element={<AdminCemeteries />} />
             <Route path="cimetieres/nouveau" element={<AdminCemeteryForm />} />
             <Route path="cimetieres/:id" element={<AdminCemeteryForm />} />
+            <Route path="actualites" element={<AdminNews />} />
+            <Route path="actualites/nouveau" element={<AdminNewsForm />} />
+            <Route path="actualites/:id" element={<AdminNewsForm />} />
+            <Route path="services" element={<AdminServices />} />
+            <Route path="services/nouveau" element={<AdminServiceForm />} />
+            <Route path="services/:id" element={<AdminServiceForm />} />
             <Route path="medias" element={<AdminMedia />} />
+            <Route path="signalements" element={<AdminReports />} />
+            <Route path="unites" element={<AdminUnites />} />
+            <Route path="utilisateurs" element={<AdminUsers />} />
+            <Route path="alertes" element={<AdminAlerts />} />
           </Route>
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>

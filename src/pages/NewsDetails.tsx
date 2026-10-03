@@ -2,12 +2,20 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { newsItems } from '@/data/news';
+import { useNewsArticle } from '@/hooks/useNews';
 
 export default function NewsDetails() {
   const { slug } = useParams<{ slug: string }>();
   const { t, lang } = useLanguage();
-  const article = newsItems.find((n) => n.slug === slug);
+  const { article, loading } = useNewsArticle(slug);
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-20 text-center">
+        <p className="text-olive/50">…</p>
+      </div>
+    );
+  }
 
   if (!article) {
     return (
@@ -50,17 +58,17 @@ export default function NewsDetails() {
       <section className="py-20 lg:py-28 bg-off-white">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-12 xl:px-20">
           <div className="max-w-3xl">
-            {/* Image placeholder */}
-            <div className="aspect-[16/9] bg-light-gray mb-10">
-              <div className="w-full h-full bg-gradient-to-br from-olive/10 to-deep-forest/5 flex items-center justify-center">
-                <span className="text-olive/15 text-6xl font-thin font-display">{article.id}</span>
-              </div>
+            <div className="aspect-[16/9] bg-light-gray mb-10 overflow-hidden">
+              {article.imageUrl ? (
+                <img src={article.imageUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-olive/10 to-deep-forest/5 flex items-center justify-center">
+                  <span className="text-olive/15 text-6xl font-thin font-display">EGPFC</span>
+                </div>
+              )}
             </div>
             <p className={`text-lg leading-relaxed text-deep-forest/70 ${lang === 'ar' ? 'font-arabic text-right' : ''}`}>
               {lang === 'ar' ? article.descriptionAr : article.description}
-            </p>
-            <p className={`text-base leading-relaxed text-deep-forest/50 mt-6 ${lang === 'ar' ? 'font-arabic text-right' : ''}`}>
-              Cet article présente les détails de l&apos;initiative menée par l&apos;EGPFC dans le cadre de sa mission de gestion et de préservation des cimetières de la Wilaya d&apos;Alger.
             </p>
           </div>
         </div>

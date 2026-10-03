@@ -16,3 +16,18 @@ export const supabase = createClient<Database>(
   supabaseUrl ?? 'https://placeholder.supabase.co',
   supabaseAnonKey ?? 'placeholder',
 );
+
+/** Separate client so chef signUp does not replace the admin session. */
+export function createAuthSignupClient() {
+  return createClient<Database>(
+    supabaseUrl ?? 'https://placeholder.supabase.co',
+    supabaseAnonKey ?? 'placeholder',
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    },
+  );
+}

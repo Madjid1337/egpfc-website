@@ -1,68 +1,141 @@
 import { Link } from 'react-router-dom';
-import { MapPinned, Images, Plus } from 'lucide-react';
+import { MapPinned, Images, Plus, Newspaper, Briefcase, ClipboardList, Building2, Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useCemeteries } from '@/hooks/useCemeteries';
+import { useNews } from '@/hooks/useNews';
+import { useServices } from '@/hooks/useServices';
+import { fetchMyAlerts, fetchReports, hoursPending } from '@/lib/operationsApi';
 
 export default function AdminDashboard() {
-  const { cemeteries, loading, source } = useCemeteries();
+  const { isFullAccess, isChef, uniteId } = useAuth();
+  const { cemeteries: all, loading: cLoading } = useCemeteries();
+  const cemeteries =
+    isChef && uniteId ? all.filter((c) => c.uniteId === uniteId) : all;
+  const { items: news, loading: nLoading } = useNews({ includeDrafts: true });
+  const { items: services, loading: sLoading } = useServices({ includeDrafts: true });
+  const [pendingReports, setPendingReports] = useState<number | null>(null);
+  const [overdue, setOverdue] = useState<number | null>(null);
+  const [unreadAlerts, setUnreadAlerts] = useState<number | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const { data: reports } = await fetchReports();
+      setPendingReports(reports.filter((r) => r.status === 'PENDING').length);
+      setOverdue(
+        reports.filter((r) => r.status === 'PENDING' && hoursPending(r.createdAt) >= 48).length,
+      );
+      const alerts = await fetchMyAlerts();
+      setUnreadAlerts(alerts.filter((a) => !a.readAt).length);
+    })();
+  }, []);
+
+  const cmsSections = [
+    {
+      to: '/admin/cimetieres',
+      label: 'Cimetières',
+      desc: 'Carte, fiches & QR',
+      icon: MapPinned,
+      add: '/admin/cimetieres/nouveau',
+      count: cLoading ? '…' : cemeteries.length,
+    },
+    ...(isFullAccess
+      ? [
+          {
+            to: '/admin/actualites',
+            label: 'Actualités',
+            desc: 'Articles & photos',
+            icon: Newspaper,
+            add: '/admin/actualites/nouveau',
+            count: nLoading ? '…' : news.length,
+          },
+          {
+            to: '/admin/services',
+            label: 'Nos services',
+            desc: 'Offres du site',
+            icon: Briefcase,
+            add: '/admin/services/nouveau',
+            count: sLoading ? '…' : services.length,
+          },
+          {
+            to: '/admin/medias',
+            label: 'Photos',
+            desc: 'Médias généraux',
+            icon: Images,
+            add: '/admin/medias',
+            count: '—',
+          },
+        ]
+      : []),
+  ];
+
+  const opsSections = [
+    {
+      to: '/admin/signalements',
+      label: 'Signalements',
+      desc: pendingReports === null ? '…' : `${pendingReports} en attente · ${overdue ?? 0} en retard`,
+      icon: ClipboardList,
+    },
+    ...(isFullAccess
+      ? [{ to: '/admin/unites', label: 'Unités', desc: 'Chefs & périmètres', icon: Building2 }]
+      : []),
+    ...(isChef || isFullAccess
+      ? [
+          {
+            to: '/admin/alertes',
+            label: 'Alertes',
+            desc: unreadAlerts === null ? '…' : `${unreadAlerts} non lue(s)`,
+            icon: Bell,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div>
       <h1 className="font-display text-3xl font-light text-deep-forest mb-2">Tableau de bord</h1>
       <p className="text-sm text-olive/60 mb-10">
-        Source des données : {source === 'supabase' ? 'Supabase' : 'locale (fallback)'}
+        {isFullAccess
+          ? 'Pilotage global : contenu du site et opérations terrain.'
+          : 'Cimetières et signalements de votre unité.'}
       </p>
 
-      <div className="grid sm:grid-cols-3 gap-4 mb-10">
-        <div className="bg-ivory border border-light-gray p-6">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-olive/40 mb-2">Cimetières</p>
-          <p className="font-display text-4xl font-light text-deep-forest">
-            {loading ? '…' : cemeteries.length}
-          </p>
-        </div>
-        <Link
-          to="/admin/cimetieres/nouveau"
-          className="bg-deep-forest text-ivory p-6 flex flex-col justify-between hover:bg-deep-forest/90 transition-colors"
-        >
-          <Plus className="w-5 h-5 text-muted-gold" />
-          <span className="text-sm font-semibold tracking-[0.06em] mt-6">Ajouter un cimetière</span>
-        </Link>
-        <Link
-          to="/admin/medias"
-          className="bg-ivory border border-light-gray p-6 flex flex-col justify-between hover:border-muted-gold transition-colors"
-        >
-          <Images className="w-5 h-5 text-muted-gold" />
-          <span className="text-sm font-semibold tracking-[0.06em] text-deep-forest mt-6">
-            Gérer les photos
-          </span>
-        </Link>
+      <h2 className="text-[10px] tracking-[0.2em] uppercase text-olive/40 mb-3">Opérations</h2>
+      <div className="grid sm:grid-cols-2 gap-4 mb-10">
+        {opsSections.map(({ to, label, desc, icon: Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className="bg-ivory border border-light-gray p-6 flex flex-col hover:border-muted-gold/50 transition-colors"
+          >
+            <Icon className="w-5 h-5 text-muted-gold mb-4" />
+            <h3 className="text-lg font-medium text-deep-forest mb-1">{label}</h3>
+            <p className="text-xs text-olive/50">{desc}</p>
+          </Link>
+        ))}
       </div>
 
-      <div className="bg-ivory border border-light-gray">
-        <div className="px-6 py-4 border-b border-light-gray flex items-center gap-2">
-          <MapPinned className="w-4 h-4 text-muted-gold" />
-          <h2 className="text-sm font-semibold text-deep-forest">Cimetières récents</h2>
-        </div>
-        <ul className="divide-y divide-light-gray">
-          {cemeteries.slice(0, 6).map((c) => (
-            <li key={c.id}>
-              <Link
-                to={`/admin/cimetieres/${c.id}`}
-                className="flex items-center justify-between px-6 py-4 hover:bg-off-white transition-colors"
-              >
-                <div>
-                  <p className="text-sm font-medium text-deep-forest">{c.name}</p>
-                  <p className="text-xs text-olive/50">{c.commune}</p>
-                </div>
-                <span className="text-[11px] text-olive/40 tabular-nums">
-                  {c.coordinates[0].toFixed(4)}, {c.coordinates[1].toFixed(4)}
-                </span>
+      <h2 className="text-[10px] tracking-[0.2em] uppercase text-olive/40 mb-3">Contenu</h2>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {cmsSections.map(({ to, label, desc, icon: Icon, add, count }) => (
+          <div key={to} className="bg-ivory border border-light-gray p-6 flex flex-col">
+            <div className="flex items-start justify-between mb-6">
+              <Icon className="w-5 h-5 text-muted-gold" />
+              <span className="font-display text-3xl font-light text-deep-forest">{count}</span>
+            </div>
+            <h3 className="text-lg font-medium text-deep-forest mb-1">{label}</h3>
+            <p className="text-xs text-olive/50 mb-6">{desc}</p>
+            <div className="mt-auto flex gap-3">
+              <Link to={to} className="text-sm font-semibold text-deep-forest hover:text-muted-gold">
+                Gérer →
               </Link>
-            </li>
-          ))}
-          {!loading && cemeteries.length === 0 && (
-            <li className="px-6 py-8 text-sm text-olive/50">Aucun cimetière pour le moment.</li>
-          )}
-        </ul>
+              <Link to={add} className="inline-flex items-center gap-1 text-sm text-olive/50 hover:text-deep-forest">
+                <Plus className="w-3.5 h-3.5" />
+                Ajouter
+              </Link>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

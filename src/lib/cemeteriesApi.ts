@@ -25,6 +25,8 @@ function mapRow(row: CemeteryRow): Cemetery {
     descriptionAr: row.description_ar,
     imageUrl: row.image_url,
     available: row.available,
+    uniteId: row.unite_id ?? null,
+    qrCodeUrl: row.qr_code_url ?? '',
   };
 }
 

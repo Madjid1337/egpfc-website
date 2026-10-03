@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building2, Sparkles, Trees, Heart, Shield, ArrowRight } from 'lucide-react';
+import { Building2, Sparkles, Trees, Heart, Shield, Leaf, Users, MapPin, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { services } from '@/data/services';
+import { useServices } from '@/hooks/useServices';
 
 const iconMap: Record<string, React.FC<{ className?: string }>> = {
-  Building2, Sparkles, Trees, Heart, Shield,
+  Building2, Sparkles, Trees, Heart, Shield, Leaf, Users, MapPin,
 };
 
 export default function Services() {
   const { t, lang } = useLanguage();
   const { ref, revealed } = useScrollReveal();
+  const { items: services } = useServices();
 
   return (
     <section className="py-24 lg:py-32 xl:py-40 bg-off-white">
@@ -32,7 +33,7 @@ export default function Services() {
 
         <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-[1px] bg-light-gray">
           {services.map((service, i) => {
-            const Icon = iconMap[service.icon];
+            const Icon = iconMap[service.icon] ?? Building2;
             return (
               <motion.div
                 key={service.id}
@@ -41,19 +42,16 @@ export default function Services() {
                 transition={{ duration: 0.5, delay: 0.08 * i, ease: 'easeOut' }}
                 className="group bg-off-white p-8 lg:p-10 xl:p-12 hover:bg-ivory transition-all duration-500 relative overflow-hidden"
               >
-                {/* Gold accent on hover */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
 
                 <div className="flex items-start justify-between mb-6">
                   <span className={`text-4xl lg:text-5xl font-thin text-light-gray group-hover:text-muted-gold/20 transition-colors duration-500 ${lang === 'ar' ? 'font-arabic' : 'font-display'}`}>
                     {service.number}
                   </span>
-                  {Icon && (
-                    <Icon className="w-6 h-6 lg:w-7 lg:h-7 text-olive/40 group-hover:text-muted-gold transition-colors duration-500" />
-                  )}
+                  <Icon className="w-6 h-6 lg:w-7 lg:h-7 text-olive/40 group-hover:text-muted-gold transition-colors duration-500" />
                 </div>
 
-                <h3 className={`text-lg lg:text-xl font-semibold text-deep-forest mb-3 group-hover:text-deep-forest transition-colors ${lang === 'ar' ? 'font-arabic' : ''}`}>
+                <h3 className={`text-lg lg:text-xl font-semibold text-deep-forest mb-3 ${lang === 'ar' ? 'font-arabic' : ''}`}>
                   {lang === 'ar' ? service.titleAr : service.title}
                 </h3>
                 <p className={`text-sm lg:text-base text-olive/60 leading-relaxed mb-5 ${lang === 'ar' ? 'font-arabic text-right' : ''}`}>

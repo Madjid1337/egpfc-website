@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MapContainer } from 'react-leaflet';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download, QrCode } from 'lucide-react';
 import MapBaseLayers from '@/components/MapBaseLayers';
 import MapClickPicker from '@/components/admin/MapClickPicker';
+import { useAuth } from '@/hooks/useAuth';
 import { useCemetery } from '@/hooks/useCemeteries';
 import {
   cemeteryToForm,
@@ -16,6 +17,8 @@ import {
   type CemeteryFormValues,
 } from '@/lib/adminApi';
 import { MAP_MAX_ZOOM } from '@/lib/mapTiles';
+import { fetchUnites } from '@/lib/operationsApi';
+import type { Unite } from '@/lib/operationsTypes';
 import type { Cemetery } from '@/data/cemeteries';
 
 const inputClass =
@@ -27,22 +30,29 @@ export default function AdminCemeteryForm() {
   const isNew = !id || id === 'nouveau';
   const navigate = useNavigate();
   const { cemetery, loading } = useCemetery(isNew ? undefined : id);
+  const { isFullAccess, isChef, uniteId: myUniteId } = useAuth();
 
   const [form, setForm] = useState<CemeteryFormValues>(emptyCemeteryForm());
+  const [unites, setUnites] = useState<Unite[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** When true, typing the French name no longer overwrites the slug */
   const [slugManual, setSlugManual] = useState(false);
   const [originalId, setOriginalId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetchUnites().then(setUnites);
+  }, []);
 
   useEffect(() => {
     if (!isNew && cemetery) {
       setForm(cemeteryToForm(cemetery));
       setOriginalId(cemetery.id);
       setSlugManual(true);
+    } else if (isNew && isChef && myUniteId) {
+      setForm((prev) => ({ ...prev, uniteId: myUniteId }));
     }
-  }, [isNew, cemetery]);
+  }, [isNew, cemetery, isChef, myUniteId]);
 
   function setField<K extends keyof CemeteryFormValues>(key: K, value: CemeteryFormValues[K]) {
     setForm((prev) => {
@@ -85,11 +95,12 @@ export default function AdminCemeteryForm() {
       return;
     }
 
+    const uniteId = isChef && myUniteId ? myUniteId : form.uniteId;
+
     setSaving(true);
-    const payload = { ...form, id: normalizedId };
+    const payload = { ...form, id: normalizedId, uniteId };
     const result = await upsertCemetery(payload);
 
-    // If the slug changed on edit, remove the old row (primary key can't be updated in place)
     if (!result.error && originalId && originalId !== normalizedId) {
       await deleteCemetery(originalId);
     }
@@ -99,6 +110,15 @@ export default function AdminCemeteryForm() {
     if (result.error) {
       setError(result.error);
       return;
+    }
+
+    if (result.qrCodeUrl) {
+      setField('qrCodeUrl', result.qrCodeUrl);
+    }
+
+    if (result.warning) {
+      setError(result.warning);
+      // Still allow leaving after a short moment — cemetery is saved
     }
 
     navigate('/admin/cimetieres');
@@ -177,6 +197,25 @@ export default function AdminCemeteryForm() {
               <label className={labelClass}>Wilaya</label>
               <input className={inputClass} value={form.wilaya} onChange={(e) => setField('wilaya', e.target.value)} />
             </div>
+
+            {isFullAccess && (
+              <div>
+                <label className={labelClass}>Unité</label>
+                <select
+                  className={inputClass}
+                  value={form.uniteId ?? ''}
+                  onChange={(e) => setField('uniteId', e.target.value || null)}
+                >
+                  <option value="">— Non assignée —</option>
+                  {unites.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Adresse (FR)</label>
@@ -240,7 +279,10 @@ export default function AdminCemeteryForm() {
               <textarea className={inputClass} rows={3} dir="rtl" value={form.descriptionAr} onChange={(e) => setField('descriptionAr', e.target.value)} />
             </div>
             <div>
-              <label className={labelClass}>Photo</label>
+              <label className={labelClass}>Photo de couverture</label>
+              <p className="text-[11px] text-olive/45 mb-2">
+                Affichée en grand sur la page du cimetière et dans la liste.
+              </p>
               <input
                 type="file"
                 accept="image/*"
@@ -249,7 +291,16 @@ export default function AdminCemeteryForm() {
                 className="block w-full text-sm text-olive/70"
               />
               {form.imageUrl && (
-                <img src={form.imageUrl} alt="" className="mt-3 h-32 w-full object-cover bg-light-gray" />
+                <img src={form.imageUrl} alt="" className="mt-3 h-40 w-full object-cover bg-light-gray" />
+              )}
+              {form.imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setField('imageUrl', '')}
+                  className="mt-2 text-xs text-olive/50 hover:text-red-700"
+                >
+                  Retirer la photo
+                </button>
               )}
             </div>
           </div>
@@ -302,6 +353,39 @@ export default function AdminCemeteryForm() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="bg-ivory border border-light-gray p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <QrCode className="w-4 h-4 text-muted-gold" />
+                <p className="mb-0 text-[11px] uppercase tracking-[0.12em] text-olive/50">QR code</p>
+              </div>
+              <p className="text-xs text-olive/50 mb-4">
+                Généré à l’enregistrement. Lien encodé :
+                <span className="block mt-1 text-deep-forest break-all">
+                  {(import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, '') ||
+                    (typeof window !== 'undefined' ? window.location.origin : '')}
+                  /cimetieres/{form.id || '…'}
+                </span>
+                Ré-enregistrez après chaque changement de VITE_PUBLIC_SITE_URL.
+              </p>
+              {form.qrCodeUrl ? (
+                <div className="flex flex-col items-start gap-3">
+                  <img src={form.qrCodeUrl} alt="QR code" className="w-40 h-40 bg-white border border-light-gray" />
+                  <a
+                    href={form.qrCodeUrl}
+                    download={`qr-${form.id || 'cimetiere'}.png`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-deep-forest hover:text-muted-gold"
+                  >
+                    <Download className="w-4 h-4" />
+                    Télécharger
+                  </a>
+                </div>
+              ) : (
+                <p className="text-sm text-olive/40">Enregistrez pour générer le QR.</p>
+              )}
             </div>
           </div>
         </div>

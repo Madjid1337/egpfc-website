@@ -1,15 +1,20 @@
 import { NavLink, Navigate, Outlet } from 'react-router-dom';
-import { LayoutDashboard, MapPinned, Images, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  MapPinned,
+  Images,
+  Newspaper,
+  Briefcase,
+  LogOut,
+  ClipboardList,
+  Building2,
+  Bell,
+  Users,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
-const links = [
-  { to: '/admin', end: true, label: 'Tableau de bord', icon: LayoutDashboard },
-  { to: '/admin/cimetieres', end: false, label: 'Cimetières', icon: MapPinned },
-  { to: '/admin/medias', end: false, label: 'Photos', icon: Images },
-];
-
 export default function AdminLayout() {
-  const { isAuthenticated, loading, signOut, user } = useAuth();
+  const { isAuthenticated, loading, signOut, user, profile, isFullAccess, isChef, isDev } = useAuth();
 
   if (loading) {
     return (
@@ -23,16 +28,68 @@ export default function AdminLayout() {
     return <Navigate to="/admin/login" replace />;
   }
 
+  const roleLabel =
+    profile?.role === 'dev'
+      ? 'Développeur'
+      : profile?.role === 'directeur'
+        ? 'Directeur'
+        : profile?.role === 'chef_unite'
+          ? 'Chef d’Unité'
+          : 'Admin';
+
+  const cmsLinks = [
+    { to: '/admin', end: true, label: 'Tableau de bord', icon: LayoutDashboard },
+    { to: '/admin/cimetieres', end: false, label: 'Cimetières', icon: MapPinned },
+    ...(isFullAccess
+      ? [
+          { to: '/admin/actualites', end: false, label: 'Actualités', icon: Newspaper },
+          { to: '/admin/services', end: false, label: 'Nos services', icon: Briefcase },
+          { to: '/admin/medias', end: false, label: 'Photos', icon: Images },
+        ]
+      : []),
+  ];
+
+  const opsLinks = [
+    { to: '/admin/signalements', end: false, label: 'Signalements', icon: ClipboardList },
+    ...(isFullAccess
+      ? [
+          { to: '/admin/unites', end: false, label: 'Unités', icon: Building2 },
+          { to: '/admin/utilisateurs', end: false, label: 'Utilisateurs', icon: Users },
+        ]
+      : []),
+    ...(isChef || isFullAccess
+      ? [{ to: '/admin/alertes', end: false, label: 'Alertes', icon: Bell }]
+      : []),
+  ];
+
   return (
     <div className="min-h-screen bg-off-white flex">
       <aside className="w-64 shrink-0 bg-deep-forest text-ivory flex flex-col">
         <div className="px-6 py-8 border-b border-ivory/10">
-          <p className="text-[10px] tracking-[0.3em] text-muted-gold uppercase mb-2">Admin</p>
+          <p className="text-[10px] tracking-[0.3em] text-muted-gold uppercase mb-2">{roleLabel}</p>
           <h1 className="font-display text-xl font-light">EGPFC</h1>
           <p className="text-[11px] text-ivory/40 mt-2 truncate">{user?.email}</p>
+          {isDev && <p className="text-[10px] text-muted-gold/80 mt-1">Accès complet</p>}
         </div>
-        <nav className="flex-1 px-3 py-6 space-y-1">
-          {links.map(({ to, end, label, icon: Icon }) => (
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+          <p className="px-3 mb-2 text-[9px] tracking-[0.2em] uppercase text-ivory/30">Contenu</p>
+          {cmsLinks.map(({ to, end, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                  isActive ? 'bg-ivory/10 text-muted-gold' : 'text-ivory/70 hover:bg-ivory/5 hover:text-ivory'
+                }`
+              }
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </NavLink>
+          ))}
+          <p className="px-3 mt-6 mb-2 text-[9px] tracking-[0.2em] uppercase text-ivory/30">Opérations</p>
+          {opsLinks.map(({ to, end, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

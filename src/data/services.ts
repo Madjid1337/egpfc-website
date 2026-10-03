@@ -8,6 +8,8 @@ export interface Service {
   icon: string;
   features: string[];
   featuresAr: string[];
+  sortOrder?: number;
+  published?: boolean;
 }
 
 export const services: Service[] = [

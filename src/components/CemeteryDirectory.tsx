@@ -105,8 +105,12 @@ export default function CemeteryDirectory() {
                     className={`flex items-center justify-between py-6 group hover:bg-ivory/50 px-4 -mx-4 transition-colors duration-300 ${lang === 'ar' ? 'flex-row-reverse' : ''}`}
                   >
                     <div className={`flex items-center gap-5 lg:gap-8 min-w-0 ${lang === 'ar' ? 'flex-row-reverse text-right' : ''}`}>
-                      <div className="w-12 h-12 lg:w-14 lg:h-14 bg-light-gray shrink-0 flex items-center justify-center text-olive/30 text-xs font-mono">
-                        {cemetery.hectares}ha
+                      <div className="w-16 h-16 lg:w-20 lg:h-20 bg-light-gray shrink-0 overflow-hidden flex items-center justify-center text-olive/30 text-xs font-mono">
+                        {cemetery.imageUrl ? (
+                          <img src={cemetery.imageUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          `${cemetery.hectares}ha`
+                        )}
                       </div>
                       <div className="min-w-0">
                         <h3 className={`text-base lg:text-lg font-semibold text-deep-forest mb-1 group-hover:text-deep-forest transition-colors ${lang === 'ar' ? 'font-arabic' : ''}`}>

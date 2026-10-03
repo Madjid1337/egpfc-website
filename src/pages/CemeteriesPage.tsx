@@ -122,10 +122,21 @@ export default function CemeteriesPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.05 * i }}
               >
-                <Link to={`/cimetieres/${cemetery.id}`} className="block bg-white border border-light-gray p-6 hover:border-muted-gold/30 transition-all duration-300 group">
-                  <div className="w-14 h-14 bg-light-gray flex items-center justify-center text-olive/30 text-xs font-mono mb-4">
-                    {cemetery.hectares}ha
+                <Link to={`/cimetieres/${cemetery.id}`} className="block bg-white border border-light-gray overflow-hidden hover:border-muted-gold/30 transition-all duration-300 group">
+                  <div className="aspect-[16/10] bg-light-gray overflow-hidden">
+                    {cemetery.imageUrl ? (
+                      <img
+                        src={cemetery.imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-olive/25 text-xs font-mono">
+                        {cemetery.hectares} ha
+                      </div>
+                    )}
                   </div>
+                  <div className="p-6">
                   <h3 className={`text-lg font-semibold text-deep-forest mb-2 ${lang === 'ar' ? 'font-arabic' : ''}`}>
                     {lang === 'ar' ? cemetery.nameAr : cemetery.name}
                   </h3>
@@ -146,6 +157,7 @@ export default function CemeteriesPage() {
                     {t.cemeteries.viewDetails}
                     <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1 rtl:rotate-180" />
                   </span>
+                  </div>
                 </Link>
               </motion.div>
             ))}
