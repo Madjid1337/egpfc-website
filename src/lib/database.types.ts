@@ -226,7 +226,7 @@ export type Database = {
           id: string;
           email: string | null;
           full_name: string;
-          role: 'dev' | 'directeur' | 'chef_unite';
+          role: 'dev' | 'directeur' | 'chef_unite' | 'inventaire';
           unite_id: string | null;
           created_at: string;
         };
@@ -234,7 +234,7 @@ export type Database = {
           id: string;
           email?: string | null;
           full_name?: string;
-          role?: 'dev' | 'directeur' | 'chef_unite';
+          role?: 'dev' | 'directeur' | 'chef_unite' | 'inventaire';
           unite_id?: string | null;
           created_at?: string;
         };
@@ -242,7 +242,7 @@ export type Database = {
           id?: string;
           email?: string | null;
           full_name?: string;
-          role?: 'dev' | 'directeur' | 'chef_unite';
+          role?: 'dev' | 'directeur' | 'chef_unite' | 'inventaire';
           unite_id?: string | null;
           created_at?: string;
         };
@@ -341,6 +341,120 @@ export type Database = {
         };
         Relationships: [];
       };
+      inventory_items: {
+        Row: {
+          id: string;
+          name: string;
+          category: string;
+          cemetery_id: string | null;
+          condition: 'bon' | 'pas_bon' | 'use';
+          barcode: string;
+          notes: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category: string;
+          cemetery_id?: string | null;
+          condition?: 'bon' | 'pas_bon' | 'use';
+          barcode: string;
+          notes?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          category?: string;
+          cemetery_id?: string | null;
+          condition?: 'bon' | 'pas_bon' | 'use';
+          barcode?: string;
+          notes?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      inventory_campaigns: {
+        Row: {
+          id: string;
+          year: number;
+          status: 'open' | 'closed';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          year: number;
+          status?: 'open' | 'closed';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          year?: number;
+          status?: 'open' | 'closed';
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      inventory_teams: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          team: number;
+          user_id: string | null;
+          full_name: string;
+          email: string;
+          temp_password: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          team: number;
+          user_id?: string | null;
+          full_name?: string;
+          email: string;
+          temp_password?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          team?: number;
+          user_id?: string | null;
+          full_name?: string;
+          email?: string;
+          temp_password?: string;
+        };
+        Relationships: [];
+      };
+      inventory_counts: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          item_id: string;
+          team: number;
+          condition: 'bon' | 'pas_bon' | 'use';
+          counted_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          item_id: string;
+          team: number;
+          condition: 'bon' | 'pas_bon' | 'use';
+          counted_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          item_id?: string;
+          team?: number;
+          condition?: 'bon' | 'pas_bon' | 'use';
+          counted_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -353,6 +467,40 @@ export type Database = {
       is_directeur: { Args: Record<string, never>; Returns: boolean };
       is_staff_full: { Args: Record<string, never>; Returns: boolean };
       is_chef: { Args: Record<string, never>; Returns: boolean };
+      inventory_list_unites: {
+        Args: { p_email: string; p_password: string };
+        Returns: { id: string; name: string; nameAr: string }[] | null;
+      };
+      inventory_team_login: {
+        Args: { p_email: string; p_password: string };
+        Returns: {
+          teamId: string;
+          team: number;
+          fullName: string;
+          email: string;
+          campaignId: string;
+          year: number;
+        } | null;
+      };
+      inventory_item_by_barcode: {
+        Args: { p_email: string; p_password: string; p_barcode: string };
+        Returns: {
+          id: string;
+          name: string;
+          category: string;
+          cemeteryId: string | null;
+          condition: 'bon' | 'pas_bon' | 'use';
+          barcode: string;
+        } | null;
+      };
+      inventory_item_counts: {
+        Args: { p_email: string; p_password: string; p_item_id: string };
+        Returns: { team: number; condition: 'bon' | 'pas_bon' | 'use' }[] | null;
+      };
+      inventory_submit_count: {
+        Args: { p_email: string; p_password: string; p_item_id: string; p_condition: string };
+        Returns: string | null;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

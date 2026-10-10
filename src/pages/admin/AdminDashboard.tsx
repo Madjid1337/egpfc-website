@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { MapPinned, Images, Plus, Newspaper, Briefcase, ClipboardList, Building2, Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,7 +8,7 @@ import { useServices } from '@/hooks/useServices';
 import { fetchMyAlerts, fetchReports, hoursPending } from '@/lib/operationsApi';
 
 export default function AdminDashboard() {
-  const { isFullAccess, isChef, uniteId } = useAuth();
+  const { isFullAccess, isChef, isInventory, uniteId } = useAuth();
   const { cemeteries: all, loading: cLoading } = useCemeteries();
   const cemeteries =
     isChef && uniteId ? all.filter((c) => c.uniteId === uniteId) : all;
@@ -25,10 +25,12 @@ export default function AdminDashboard() {
       setOverdue(
         reports.filter((r) => r.status === 'PENDING' && hoursPending(r.createdAt) >= 48).length,
       );
-      const alerts = await fetchMyAlerts();
-      setUnreadAlerts(alerts.filter((a) => !a.readAt).length);
+      if (isChef) {
+        const alerts = await fetchMyAlerts();
+        setUnreadAlerts(alerts.filter((a) => !a.readAt).length);
+      }
     })();
-  }, []);
+  }, [isChef]);
 
   const cmsSections = [
     {
@@ -79,7 +81,7 @@ export default function AdminDashboard() {
     ...(isFullAccess
       ? [{ to: '/admin/unites', label: 'Unités', desc: 'Chefs & périmètres', icon: Building2 }]
       : []),
-    ...(isChef || isFullAccess
+    ...(isChef
       ? [
           {
             to: '/admin/alertes',
@@ -90,6 +92,10 @@ export default function AdminDashboard() {
         ]
       : []),
   ];
+
+  if (isInventory) {
+    return <Navigate to="/admin/inventaire/scan" replace />;
+  }
 
   return (
     <div>

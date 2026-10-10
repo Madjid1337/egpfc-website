@@ -25,6 +25,8 @@ import AdminReports from '@/pages/admin/AdminReports';
 import AdminUnites from '@/pages/admin/AdminUnites';
 import AdminAlerts from '@/pages/admin/AdminAlerts';
 import AdminUsers from '@/pages/admin/AdminUsers';
+import AdminInventory from '@/pages/admin/AdminInventory';
+import AdminInventoryScan from '@/pages/admin/AdminInventoryScan';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -36,7 +38,19 @@ function ScrollToTop() {
 
 function AppRoutes() {
   const { pathname } = useLocation();
+  const isTeamLogin = pathname === '/inventaire';
   const isAdmin = pathname.startsWith('/admin');
+
+  if (isTeamLogin) {
+    return (
+      <>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/inventaire" element={<AdminInventoryScan />} />
+        </Routes>
+      </>
+    );
+  }
 
   if (isAdmin) {
     return (
@@ -60,6 +74,8 @@ function AppRoutes() {
             <Route path="unites" element={<AdminUnites />} />
             <Route path="utilisateurs" element={<AdminUsers />} />
             <Route path="alertes" element={<AdminAlerts />} />
+            <Route path="inventaire" element={<AdminInventory />} />
+            <Route path="inventaire/scan" element={<Navigate to="/inventaire" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>

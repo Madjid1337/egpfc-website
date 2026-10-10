@@ -274,7 +274,7 @@ export default function AdminReports() {
                     Marquer résolu
                   </button>
                 )}
-                {isFullAccess && overdue && (
+                {isFullAccess && r.status !== 'RESOLVED' && (
                   <button
                     type="button"
                     disabled={busyId === r.id}

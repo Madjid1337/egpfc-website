@@ -65,6 +65,7 @@ export function useAuth() {
   const isDev = role === 'dev';
   const isDirecteur = role === 'directeur';
   const isChef = role === 'chef_unite';
+  const isInventory = role === 'inventaire';
 
   return {
     session,
@@ -75,6 +76,7 @@ export function useAuth() {
     isDev,
     isDirecteur,
     isChef,
+    isInventory,
     uniteId: profile?.uniteId ?? null,
     loading,
     isAuthenticated: Boolean(session),

@@ -1,6 +1,6 @@
 import type { Cemetery } from '@/data/cemeteries';
 
-export type UserRole = 'dev' | 'directeur' | 'chef_unite';
+export type UserRole = 'dev' | 'directeur' | 'chef_unite' | 'inventaire';
 
 export const FULL_ACCESS_ROLES: UserRole[] = ['dev', 'directeur'];
 

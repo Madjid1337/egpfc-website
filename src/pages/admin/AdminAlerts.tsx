@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { fetchMyAlerts, markAlertRead } from '@/lib/operationsApi';
 import type { Alert } from '@/lib/operationsTypes';
 
 export default function AdminAlerts() {
+  const { isChef, loading: authLoading } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,6 +14,7 @@ export default function AdminAlerts() {
     setLoading(true);
     setAlerts(await fetchMyAlerts());
     setLoading(false);
+    window.dispatchEvent(new Event('egpfc-alerts-changed'));
   }
 
   useEffect(() => {
@@ -21,6 +24,14 @@ export default function AdminAlerts() {
   async function onRead(id: string) {
     await markAlertRead(id);
     await reload();
+  }
+
+  if (authLoading) {
+    return <p className="text-olive/50">Chargement…</p>;
+  }
+
+  if (!isChef) {
+    return <Navigate to="/admin/signalements" replace />;
   }
 
   const unread = alerts.filter((a) => !a.readAt).length;
